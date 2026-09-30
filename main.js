@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { login } = require("./auth");
+const { login, refresh } = require("./auth");
 const { createStore } = require("./token-store");
 const minecraft = require("./minecraft");
 
@@ -39,8 +39,27 @@ ipcMain.handle("dialog:file", async (_event, filters) => {
 ipcMain.handle("shell:openPath", async (_event, target) => shell.openPath(target));
 ipcMain.handle("shell:openExternal", async (_event, url) => shell.openExternal(url));
 
-ipcMain.handle("auth:status", () => {
-  const stored = tokenStore.read();
+async function ensureSession() {
+  let stored = tokenStore.read();
+  if (!stored?.microsoft?.accessToken) return null;
+  if (stored.microsoft.expiresAt && stored.microsoft.expiresAt < Date.now() + 120000 && stored.microsoft.refreshToken) {
+    const config = loadConfig();
+    const oauth = await refresh(stored.microsoft.refreshToken, config.clientId);
+    stored.microsoft = {
+      accessToken: oauth.access_token,
+      refreshToken: oauth.refresh_token || stored.microsoft.refreshToken,
+      expiresAt: Date.now() + Number(oauth.expires_in || 3600) * 1000
+    };
+    const account = await minecraft.getMinecraftAccount(stored.microsoft.accessToken);
+    stored.account = { id: account.id, name: account.name, skins: account.skins, cape: account.cape };
+    stored.minecraft = { accessToken: account.accessToken, expiresAt: Date.now() + Number(account.expiresIn || 3600) * 1000 };
+    tokenStore.write(stored);
+  }
+  return stored;
+}
+
+ipcMain.handle("auth:status", async () => {
+  const stored = await ensureSession();
   return stored?.account ? stored.account : null;
 });
 
@@ -63,7 +82,7 @@ ipcMain.handle("auth:login", async () => {
 ipcMain.handle("auth:logout", () => { tokenStore.clear(); return true; });
 
 ipcMain.handle("launcher:prepare", async (event, options) => {
-  const stored = tokenStore.read();
+  const stored = await ensureSession();
   if (!stored?.account || !stored?.minecraft?.accessToken) throw new Error("請先登入 Microsoft 帳號。");
   const gameDir = options.gameDir || path.join(app.getPath("home"), "minecraft");
   const result = await minecraft.prepareJavaVersion({
