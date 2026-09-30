@@ -6,7 +6,10 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "build:win": "electron-builder --win nsis",
+    "build:mac": "electron-builder --mac dmg",
+    "build:linux": "electron-builder --linux AppImage"
   },
   "devDependencies": {
     "electron": "^38.2.0",
@@ -15,9 +18,54 @@
   "build": {
     "appId": "com.railway79899.minecraftlauncher",
     "productName": "Minecraft Launcher",
-    "files": ["index.html", "style.css", "app.js", "main.js", "preload.js", "README.md"],
-    "win": { "target": "nsis" },
-    "mac": { "target": "dmg" },
-    "linux": { "target": "AppImage" }
+    "asar": true,
+    "files": [
+      "index.html",
+      "style.css",
+      "app.js",
+      "main.js",
+      "preload.js",
+      "README.md"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }
