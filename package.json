@@ -1,0 +1,23 @@
+{
+  "name": "minecraft-launcher",
+  "version": "0.3.0",
+  "description": "Minecraft Java/Bedrock desktop launcher UI built with Electron.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.railway79899.minecraftlauncher",
+    "productName": "Minecraft Launcher",
+    "files": ["index.html", "style.css", "app.js", "main.js", "preload.js", "README.md"],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg" },
+    "linux": { "target": "AppImage" }
+  }
+}
