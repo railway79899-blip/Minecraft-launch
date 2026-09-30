@@ -117,4 +117,14 @@ async function login({ clientId = CLIENT_ID } = {}) {
   return result;
 }
 
-module.exports = { login };
+async function refresh(refreshToken, clientId = CLIENT_ID) {
+  if (!refreshToken || !clientId) throw new Error("缺少 Microsoft refresh token 或 Client ID。");
+  return requestForm(`${AUTH_BASE}/oauth20_token.srf`, {
+    client_id: clientId,
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    scope: "XboxLive.signin offline_access"
+  });
+}
+
+module.exports = { login, refresh };
