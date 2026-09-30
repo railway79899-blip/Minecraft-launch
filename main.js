@@ -94,7 +94,7 @@ ipcMain.handle("launcher:prepare", async (event, options) => {
 });
 
 ipcMain.handle("launcher:java", async (event, options) => {
-  const stored = tokenStore.read();
+  const stored = await ensureSession();
   if (!stored?.account || !stored?.minecraft?.accessToken) throw new Error("請先登入 Microsoft 帳號。");
   const javaPath = options.javaPath;
   if (!javaPath || !fs.existsSync(javaPath)) throw new Error("找不到 Java 執行檔。");
