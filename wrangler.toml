@@ -1,0 +1,3 @@
+name = "minecraft-launch-api"
+main = "api/worker.js"
+compatibility_date = "2026-09-30"
