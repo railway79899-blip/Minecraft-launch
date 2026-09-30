@@ -1,112 +1,50 @@
-# Minecraft Launcher — Electron Desktop
+# Minecraft Launcher Web + Cloud API
 
-這個專案現在是 **Electron 桌面版的合法 Minecraft Launcher 架構**，不是單純網頁。
+本專案已升級為「瀏覽器版 Launcher + Cloudflare Worker API」。
 
-## 已完成的流程
+## 網頁版
 
-1. 使用 Microsoft OAuth 2.0 + PKCE 登入。
-2. 透過 Xbox Live / XSTS 取得 Minecraft Services 授權。
-3. 檢查 Minecraft Java Edition entitlement。
-4. 取得玩家 UUID、Java Edition 玩家名稱與已授權的 skin/cape 資訊。
-5. 使用 Electron safeStorage 加密保存登入 session。
-6. Microsoft refresh token 到期前自動更新 session。
-7. 從 Mojang 官方 version manifest 取得正式版。
-8. 自動下載合法版本的 client JAR、libraries、natives 與 assets。
-9. 驗證下載檔 SHA-1。
-10. 建立 classpath、natives、遊戲參數與授權參數。
-11. 使用本機 Java 啟動選定版本。
-12. Bedrock 仍交給系統安裝的官方 Minecraft 啟動協議。
+預定 GitHub Pages 網址：
+https://railway79899-blip.github.io/Minecraft-launch/
 
-## 第一次使用
+功能：
+- Microsoft OAuth 2.0 + PKCE（MSAL Browser）
+- Minecraft Java entitlement/profile 驗證
+- 玩家名稱、UUID、skin 頭像
+- Mojang 官方 Java release version manifest
+- 版本選擇與雲端 API 狀態
+- GitHub Pages 自動部署
 
-### 1. 建立 Microsoft 應用程式
+## Cloud API
 
-到 Microsoft Entra admin center 建立 Desktop / Public Client App，取得 **Application (Client) ID**。
+Cloudflare Worker `api/worker.js`：
+- `GET /api/health`
+- `GET /api/versions`
+- `POST /api/account`
 
-在 Authentication / Mobile and desktop applications 中加入 localhost redirect URI。這個 Electron 啟動器會在登入時使用本機 loopback callback。
+`/api/account` 在請求期間使用 Microsoft access token，完成 Microsoft → Xbox Live → XSTS → Minecraft Services 驗證，不保存 Microsoft refresh token。
 
-**不要把 client secret 放進 Electron 桌面程式。**
-
-### 2. 在 Launcher 設定 Client ID
-
-啟動：
+## 部署 Cloudflare Worker
 
 ```bash
-npm install
-npm start
+npx wrangler login
+npx wrangler deploy
 ```
 
-到「設定」貼上你的 Application (Client) ID。
+部署後把 Worker URL 填到網頁「設定」的 Cloud API URL。預設值是假設的 `https://minecraft-launch-api.workers.dev`，若尚未部署會顯示 Offline。
 
-### 3. 設定 Java
+## Microsoft Entra
 
-在「設定」選擇已安裝的 Java 執行檔。
+建立 Single-page application，Redirect URI 設為：
 
-Minecraft Java 不會繞過 Microsoft/Mojang 授權；啟動前必須有合法的 Microsoft Minecraft Java entitlement。
+`https://railway79899-blip.github.io/Minecraft-launch/`
 
-## 建立安裝檔
+把 Application (Client) ID 貼到網頁「設定」。不要把 client secret 放進前端。
 
-Windows：
+## 重要限制
 
-```bash
-npm run build:win
-```
+普通瀏覽器不能直接執行使用者電腦上的 Java，也不能直接控制 `.minecraft` 或啟動本機程序。因此目前網頁版負責雲端登入、Minecraft 帳號、版本資料與雲端狀態；真正的一鍵本機 Java 啟動需要另外安裝 Desktop Agent。
 
-macOS：
+本專案不實作破解、offline/cracked authentication、偽造 token、繞過 Minecraft entitlement 或散布未授權遊戲內容。
 
-```bash
-npm run build:mac
-```
-
-Linux：
-
-```bash
-npm run build:linux
-```
-
-輸出在 `dist/`。
-
-## 技術架構
-
-- Electron BrowserWindow
-- contextIsolation + preload IPC
-- Microsoft OAuth 2.0 Authorization Code + PKCE
-- 本機 loopback OAuth callback
-- Xbox Live → XSTS → Minecraft Services
-- Minecraft entitlement/profile
-- Electron safeStorage session storage
-- 官方 Mojang version manifest
-- 官方 client/library/assets download
-- SHA-1 完整性驗證
-- natives extraction
-- Minecraft arguments / JVM arguments
-- Java process launcher
-- Windows NSIS / macOS DMG / Linux AppImage
-- GitHub Actions 三平台建置
-
-## 合法性與限制
-
-本專案不實作：
-
-- 破解帳號
-- offline/cracked authentication
-- 偽造 Microsoft/Xbox/Minecraft token
-- 繞過 entitlement
-- 下載或散布未授權遊戲內容
-
-啟動所需的帳號授權與遊戲擁有權仍由 Microsoft / Minecraft Services 驗證。
-
-## 重要設定
-
-Client ID 不是 client secret。Electron 桌面應用屬於 public client，不應在應用程式內保存 confidential client secret。
-
-官方 Microsoft 文件：
-
-- Desktop app authentication / redirect URI
-- OAuth authorization code flow
-
-本專案下載的 Minecraft Java metadata 與遊戲檔會直接依照官方 version manifest 中的 URL 與 SHA-1 資訊處理。
-
-## GitHub Actions
-
-推送到 `main` 或手動執行 workflow 後，GitHub Actions 會建立 Windows、macOS、Linux 安裝檔並放入 Actions Artifacts。
+原 Electron 程式檔案仍保留在 repository，可作為未來 Desktop Agent 的基礎。
