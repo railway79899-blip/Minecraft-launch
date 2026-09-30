@@ -1,39 +1,42 @@
 # Minecraft Launcher — Electron Desktop
 
-這個專案現在是 Electron 桌面版 Launcher 外殼，可在 Windows / macOS / Linux 建置桌面程式。
+這個專案是 Electron 桌面應用程式，不只是瀏覽器網頁。
 
-## 開發
+## 啟動桌面版
 
-```bash
 npm install
 npm start
-```
 
-## 建置安裝檔
+## 建立安裝檔
 
-```bash
-npm run build
-```
+Windows：npm run build:win
+macOS：npm run build:mac
+Linux：npm run build:linux
 
-electron-builder 會依目前作業系統產生對應的安裝/發行檔。
+輸出會放在 dist/。
 
-## 已加入
+## 桌面版功能
 
-- Electron 桌面視窗
-- 安全 preload / IPC bridge
-- Java / Bedrock Edition 切換
+- Electron BrowserWindow
+- contextIsolation + preload IPC
 - 本機設定保存
-- 遊戲目錄選擇
-- Java 執行檔選擇
-- 本機 Minecraft JAR 路徑選擇
-- Java 啟動程序
-- Bedrock 嘗試交給系統官方 `minecraft:` 協議
-- Windows / macOS / Linux electron-builder 設定
+- Java / Bedrock Edition 切換
+- 遊戲目錄、Java、JAR 選擇
+- Java 程序啟動
+- Bedrock 交給系統官方 minecraft: 協議
+- Windows NSIS 安裝程式
+- macOS DMG
+- Linux AppImage
+- GitHub Actions 自動建立三平台安裝檔
 
-## 重要
+## 注意
 
-Java 啟動功能只負責執行你指定的本機 Java 與 JAR，不包含破解、離線驗證繞過或偽造 Microsoft/Mojang 授權。
+這個 Electron 外殼不繞過 Microsoft/Mojang 授權。
 
-目前 Microsoft OAuth 與真正的 Minecraft 版本下載/資產/Library 管理仍需接入合法的官方授權流程；下載頁的進度仍是 UI 示意。
+目前 Java 啟動器會執行使用者指定的本機 Java/JAR；完整的官方 Minecraft Java 啟動流程仍需要合法的 Microsoft OAuth、版本 manifest、libraries、assets、access token 與遊戲參數。
 
-Bedrock 也不能當成 Java JAR 啟動；桌面版這裡會交給系統的官方 Minecraft 協議/平台處理。
+Bedrock 不使用 Java JAR，因此桌面版會使用系統的官方 Minecraft 協議/平台。
+
+## GitHub Actions
+
+推送到 main 或手動執行 workflow 後，GitHub Actions 會在 Windows、macOS、Linux 建立安裝檔並放進 Actions Artifacts。
