@@ -1,5 +1,5 @@
 const DEFAULT_API="https://minecraft-launch-api.workers.dev";
-let apiUrl=localStorage.getItem("mc_api_url")||DEFAULT_API,clientId=localStorage.getItem("mc_client_id")||"",selected=localStorage.getItem("mc_version")||"",account=null,versions=[];
+let apiUrl=localStorage.getItem("mc_api_url")||DEFAULT_API,clientId=localStorage.getItem("mc_client_id")||"f8cdef31-a31e-4b4a-93e4-5f571e91255a",selected=localStorage.getItem("mc_version")||"",account=null,versions=[];
 const $=id=>document.getElementById(id),basePath=location.pathname.endsWith("/")?location.pathname:location.pathname.replace(/[^/]+$/,"/");
 function setStatus(t){$("status").textContent=t}
 function renderAccount(){const name=account?.name||"未登入";$("account").textContent=name;$("headerAccount").textContent=name;$("login").hidden=!!account;$("logout").hidden=!account;const skin=account?.skins?.[0]?.url;$("avatar").src=skin||"";$("avatar").style.display=skin?"block":"none"}
