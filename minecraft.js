@@ -228,7 +228,7 @@ async function prepareJavaVersion({ version, gameDir, account, onProgress }) {
 
 function buildClasspath(prepared) { return [...prepared.libraries, prepared.jarPath].join(path.delimiter); }
 
-async function launchJava({ javaPath, gameDir, version, account, ram, onLog }) {
+async function launchJava({ javaPath, gameDir, version, account, clientId, ram, onLog }) {
   if (!account?.accessToken || !account?.id || !account?.name) throw new Error("請先登入並取得 Minecraft Java 授權。");
   const prepared = await prepareJavaVersion({ version, gameDir, account, onProgress: p => onLog?.({ type: "progress", value: p }) });
   const vars = {
@@ -239,7 +239,7 @@ async function launchJava({ javaPath, gameDir, version, account, ram, onLog }) {
     assets_index_name: prepared.assetsIndex,
     auth_uuid: account.id,
     auth_access_token: account.accessToken,
-    clientid: "00000000-0000-0000-0000-000000000000",
+    clientid: clientId || "",
     user_type: "msa",
     version_type: prepared.versionJson.type || "release",
     user_properties: "{}",
