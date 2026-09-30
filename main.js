@@ -102,6 +102,7 @@ ipcMain.handle("launcher:java", async (event, options) => {
   const result = await minecraft.launchJava({
     javaPath, gameDir, version: options.version,
     account: { ...stored.account, accessToken: stored.minecraft.accessToken },
+    clientId: loadConfig().clientId,
     ram: options.ram,
     onLog: log => event.sender.send("launcher:log", log)
   });
